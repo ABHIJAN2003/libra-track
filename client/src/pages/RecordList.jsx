@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getRecords, getStats, updateStatus, deleteRecord } from '../api/recordAPI';
-import { isAdmin } from '../auth';
+import { isAdmin, isMember } from '../auth';
 
 const fmt = (d) =>
   new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -33,6 +33,7 @@ export default function RecordList() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const admin = isAdmin();
+  const member = isMember();
 
   const load = async () => {
     try {
@@ -80,14 +81,14 @@ export default function RecordList() {
       <Navbar />
       <main className="container lt-page">
         <div className="lt-page-head">
-          <h1>Issue desk</h1>
-          <p>Books out on loan, and who has them.</p>
+          <h1>{member ? 'My books' : 'Issue desk'}</h1>
+          <p>{member ? 'Your loans and when each one is due.' : 'Books out on loan, and who has them.'}</p>
         </div>
 
         <section className="lt-ledger" aria-label="Summary">
           <div>
             <div className="num">{stats.total}</div>
-            <div className="lbl">All records</div>
+            <div className="lbl">{member ? 'All my loans' : 'All records'}</div>
           </div>
           <div className="out">
             <div className="num">{stats.issued}</div>
@@ -152,7 +153,9 @@ export default function RecordList() {
                         ? 'Clear the search or choose All to see every record.'
                         : admin
                           ? 'Use Add record to log the first book that goes out.'
-                          : 'Records appear here once the librarian adds them.'}
+                          : member
+                            ? 'Books show up here once the library desk records a loan under your mobile number.'
+                            : 'Records appear here once the librarian adds them.'}
                     </td>
                   </tr>
                 ) : (

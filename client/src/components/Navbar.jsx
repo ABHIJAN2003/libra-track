@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { getUsername, getRole, logout } from '../auth';
+import { getName, getRole, isMember, logout } from '../auth';
 
 export function BookMark({ size = 26 }) {
   return (
@@ -13,8 +13,9 @@ export function BookMark({ size = 26 }) {
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const username = getUsername() || '';
+  const name = getName() || '';
   const role = getRole();
+  const roleLabel = role === 'admin' ? 'Librarian' : isMember() ? 'Member' : 'View only';
 
   const handleLogout = () => {
     logout();
@@ -30,11 +31,11 @@ export default function Navbar() {
         </Link>
         <div className="lt-user">
           <span className="lt-avatar" aria-hidden="true">
-            {username.charAt(0).toUpperCase()}
+            {name.charAt(0).toUpperCase()}
           </span>
           <span className="d-none d-sm-block" style={{ lineHeight: 1.2 }}>
-            <span style={{ display: 'block', fontWeight: 600 }}>{username}</span>
-            <span className="lt-role">{role === 'admin' ? 'Librarian' : 'View only'}</span>
+            <span style={{ display: 'block', fontWeight: 600 }}>{name}</span>
+            <span className="lt-role">{roleLabel}</span>
           </span>
           <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
             Sign out

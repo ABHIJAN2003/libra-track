@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Record = require('../models/Record');
+const User = require('../models/User');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -26,6 +27,15 @@ const handleError = (err, res) => {
   return res.status(500).json({ message: 'Server error' });
 };
 
+// Members see only the loans recorded under their own mobile number.
+// Librarians (and view-only staff accounts that have no mobile) see everything.
+const scopeFor = async (req) => {
+  if (req.user.role === 'admin') return {};
+  const u = await User.findById(req.user.id).select('mobile');
+  if (!u) return { mobile: '__none__' };   // account was deleted: show nothing
+  return u.mobile ? { mobile: u.mobile } : {};
+};
+
 const checkId = (req, res, next) => {
   if (!mongoose.isValidObjectId(req.params.id)) {
     return res.status(400).json({ message: 'Invalid record id' });
@@ -36,10 +46,11 @@ const checkId = (req, res, next) => {
 // GET /api/records/stats  -> summary card numbers (must be above /:id)
 router.get('/stats', async (req, res) => {
   try {
+    const scope = await scopeFor(req);
     const [total, issued, returned] = await Promise.all([
-      Record.countDocuments(),
-      Record.countDocuments({ status: 'Issued' }),
-      Record.countDocuments({ status: 'Returned' }),
+      Record.countDocuments(scope),
+      Record.countDocuments({ ...scope, status: 'Issued' }),
+      Record.countDocuments({ ...scope, status: 'Returned' }),
     ]);
     res.json({ total, issued, returned });
   } catch (err) {
@@ -51,7 +62,7 @@ router.get('/stats', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { search, status } = req.query;
-    const filter = {};
+    const filter = { ...(await scopeFor(req)) };
 
     if (status && ['Issued', 'Returned'].includes(status)) filter.status = status;
 
@@ -74,7 +85,8 @@ router.get('/', async (req, res) => {
 // GET /api/records/:id
 router.get('/:id', checkId, async (req, res) => {
   try {
-    const record = await Record.findById(req.params.id);
+    const scope = await scopeFor(req);
+    const record = await Record.findOne({ _id: req.params.id, ...scope });
     if (!record) return res.status(404).json({ message: 'Record not found' });
     res.json(record);
   } catch (err) {

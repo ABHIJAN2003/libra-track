@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import RecordList from './pages/RecordList';
 import RecordDetails from './pages/RecordDetails';
 import RecordForm from './pages/RecordForm';
@@ -20,6 +21,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/" element={<PrivateRoute><RecordList /></PrivateRoute>} />
       <Route path="/records/new" element={<AdminRoute><RecordForm /></AdminRoute>} />
       <Route path="/records/:id" element={<PrivateRoute><RecordDetails /></PrivateRoute>} />

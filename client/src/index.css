@@ -370,3 +370,12 @@ h1, h2, h3, h4, h5 {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+/* ---------- Register / sign-in extras ---------- */
+.lt-switch { margin: 1.25rem 0 0; color: var(--muted); text-align: center; }
+.lt-switch a { color: var(--stamp); font-weight: 600; }
+
+.lt-tabs.block { display: flex; width: 100%; }
+.lt-tabs.block button { flex: 1; }
+
+.lt-login-form { align-items: start; overflow-y: auto; }
+@media (min-height: 760px) { .lt-login-form { align-items: center; } }
